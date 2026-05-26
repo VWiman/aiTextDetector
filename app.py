@@ -170,7 +170,7 @@ if st.button("Analyze Text", disabled=(model is None and not demo_mode)):
                 st.success("### Result: Likely Human")
                 st.metric("Human Confidence", f"{is_human_prob*100:.1f}%")
             
-            st.progress(is_ai_prob, text=f"AI probability index")
+            st.progress(float(np.clip(is_ai_prob, 0.0, 1.0)), text=f"AI probability index")
 
         with col_stats:
             st.write("**Text Statistics**")
@@ -180,8 +180,8 @@ if st.button("Analyze Text", disabled=(model is None and not demo_mode)):
             
         st.write("---")
         st.write("#### Detailed Probability Distribution")
-        st.progress(is_ai_prob, text=f"AI Probability: {is_ai_prob*100:.1f}%")
-        st.progress(is_human_prob, text=f"Human Probability: {is_human_prob*100:.1f}%")
+        st.progress(float(np.clip(is_ai_prob, 0.0, 1.0)), text=f"AI Probability: {is_ai_prob*100:.1f}%")
+        st.progress(float(np.clip(is_human_prob, 0.0, 1.0)), text=f"Human Probability: {is_human_prob*100:.1f}%")
 
         # --- Explainability Section ---
         st.markdown("#### 🔍 Linguistic Fingerprints")
