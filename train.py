@@ -1,3 +1,4 @@
+import warnings
 import tensorflow as tf
 import pandas as pd
 import joblib
@@ -6,6 +7,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics import classification_report
 from config import *
+from eda import eda
 warnings.filterwarnings('ignore')
 
 print("Tensorflow version: ", tf.__version__)
@@ -37,6 +39,7 @@ df_sample = pd.concat([df_human, df_ai]).reset_index(drop=True)
 print("=" * 60)
 print("2. EDA (Exploratory Data Analysis)")
 print("=" * 60)
+eda(df_sample)
 
 # ============================================================
 # 3. PREPROCESSING
