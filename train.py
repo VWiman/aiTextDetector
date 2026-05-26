@@ -189,9 +189,11 @@ if grid_search == False:
 
     joblib.dump(tfidf, 'tfidf_vectorizer.joblib')
     joblib.dump(le, 'label_encoder.joblib')
+    joblib.dump(scaler, 'scaler.joblib')
 
     print("TF-IDF vectorizer saved: tfidf_vectorizer.joblib")
     print("Label encoder saved: label_encoder.joblib")
+    print("Standard saved: scaler.joblib")
 
     # ============================================================
     # 7. EVALUATE MODEL
