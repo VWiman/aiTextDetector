@@ -1,2 +1,3 @@
 ai_detector_dataset.csv
 .DS_Store
+__pycache__

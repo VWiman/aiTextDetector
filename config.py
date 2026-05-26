@@ -1,7 +1,7 @@
 """
 Configuration for ANN AI Text Detector
 =======================================
-Edit values here — no need to touch ann_ai_detector.py
+Edit values here — no need to touch train.py
 """
 
 # ── Data ──────────────────────────────────────────────────
@@ -19,8 +19,8 @@ TFIDF_STOP_WORDS = 'english'
 # Each tuple = (neurons, activation, dropout_rate)
 # Layers are stacked in order; dropout_rate=0 means no Dropout layer
 HIDDEN_LAYERS = [
-    (32, 'relu', 0.4),
-    (16, 'relu', 0.3),
+    (32, 'tanh', 0.4),
+    (16, 'tanh', 0.3),
 ]
 OUTPUT_ACTIVATION = 'sigmoid'      # sigmoid for binary classification
 
@@ -30,7 +30,7 @@ LEARNING_RATE = 0.00003            # default Adam LR (set to None to use optimiz
 LOSS = 'binary_crossentropy'
 
 # ── Training ──────────────────────────────────────────────
-EPOCHS = 10
+EPOCHS = 12
 BATCH_SIZE = 32
 VALIDATION_SPLIT = 0.2             # fraction of training data used for validation
 
@@ -45,3 +45,15 @@ FI_TOP_N = 3                      # how many features to display
 FI_CANDIDATES = 10                 # pre-screen candidates via model weights
 FI_TEST_SAMPLES = 100              # test samples used for permutation
 FI_REPEATS = 2                     # permutation repeats per feature
+
+# ── Grid Search ────────────────────────────────────
+PARAM_GRID = {
+    'model__n_neurons_layer1': [32],
+    'model__n_neurons_layer2': [16],
+    'model__dropout_rate': [0.2, 0.3, 0.4],
+    'model__activation': ['relu', 'tanh'],
+    'model__optimizer': [OPTIMIZER],
+    'model__learning_rate': [0.001, LEARNING_RATE],
+    'epochs': [EPOCHS],
+    'batch_size': [BATCH_SIZE]
+}

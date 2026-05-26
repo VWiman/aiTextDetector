@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
-import tqdm
+from tqdm import tqdm
 from config import *
 # ============================================================
 # FEATURE IMPORTANCE
@@ -26,7 +26,8 @@ def feature_importance(model, X_test, y_test, tfidf):
         for r in range(FI_REPEATS):
             X_permuted = X_test_small.copy()
             np.random.seed(r)
-            X_permuted[:, feat_i] = np.random.permutation(X_permuted[:, feat_i])
+            col = np.asarray(X_permuted[:, feat_i].todense()).flatten()
+            X_permuted[:, feat_i] = np.random.permutation(col).reshape(-1, 1)
             y_perm_prob = model.predict(X_permuted, verbose=0).flatten()
             perm_acc = np.mean((y_perm_prob >= 0.5).astype(int) == y_test_small)
             drops.append(baseline_acc - perm_acc)
