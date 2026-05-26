@@ -159,10 +159,10 @@ if st.button("Analyze Text", disabled=(model is None and not demo_mode)):
         col_res, col_stats = st.columns([1, 1])
         
         with col_res:
-            if is_ai_prob > 0.6:
+            if is_ai_prob > 0.5:
                 st.error("### Result: Likely AI")
                 st.metric("AI Confidence", f"{is_ai_prob*100:.1f}%")
-            elif is_ai_prob > 0.4:
+            elif is_ai_prob > 0.485:
                 st.warning("### Result: Inconclusive")
                 st.write("The model cannot confidently classify this text. It shows patterns of both human and AI writing.")
             else: # Clearly Human
