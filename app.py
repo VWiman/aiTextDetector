@@ -1,11 +1,20 @@
 import streamlit as st
 import tensorflow as tf
+import keras
 import joblib
 import numpy as np
 import os
 import time
 import pandas as pd
 import re
+
+# Monkeypatch Keras to handle models saved with different versions
+from keras.layers import Layer
+original_layer_init = Layer.__init__
+def patched_layer_init(self, *args, **kwargs):
+    kwargs.pop('quantization_config', None)
+    original_layer_init(self, *args, **kwargs)
+Layer.__init__ = patched_layer_init
 
 # Set page configuration
 st.set_page_config(
@@ -22,17 +31,19 @@ def load_assets():
     model_path = 'ann_ai_detector_model.keras'
     tfidf_path = 'tfidf_vectorizer.joblib'
     le_path = 'label_encoder.joblib'
+    scaler_path = 'scaler.joblib'
     
-    assets = {"model": None, "tfidf": None, "le": None, "error": None}
+    assets = {"model": None, "tfidf": None, "le": None, "scaler": None, "error": None}
     
     if not os.path.exists(model_path):
         assets["error"] = f"Model file '{model_path}' not found."
         return assets
 
     try:
-        assets["model"] = tf.keras.models.load_model(model_path)
+        assets["model"] = keras.models.load_model(model_path)
         assets["tfidf"] = joblib.load(tfidf_path)
         assets["le"] = joblib.load(le_path)
+        assets["scaler"] = joblib.load(scaler_path)
     except Exception as e:
         assets["error"] = str(e)
         
@@ -42,6 +53,7 @@ assets = load_assets()
 model = assets["model"]
 tfidf = assets["tfidf"]
 le = assets["le"]
+scaler = assets["scaler"]
 
 # ============================================================
 # 2. HELPER FUNCTIONS
@@ -65,13 +77,14 @@ def calculate_text_stats(text):
     }
 
 def get_top_influential_words(text, is_ai_leaning):
-    if model is not None and tfidf is not None:
+    if model is not None and tfidf is not None and scaler is not None:
         feature_names = tfidf.get_feature_names_out()
         weights = model.layers[0].get_weights()[0].sum(axis=1)
-        X_vec = tfidf.transform([text]).toarray()[0]
-        impact = X_vec * weights
+        X_vec = tfidf.transform([text])
+        X_vec_scaled = scaler.transform(X_vec).toarray()[0]
+        impact = X_vec_scaled * weights
         top_indices = np.argsort(np.abs(impact))[-8:]
-        return [feature_names[i] for i in top_indices if X_vec[i] > 0]
+        return [feature_names[i] for i in top_indices if X_vec_scaled[i] > 0]
     else:
         ai_words = ["moreover", "furthermore", "essential", "in conclusion", "intricate", "tapestry", "complex", "shimmering"]
         human_words = ["really", "actually", "just", "maybe", "think", "guess", "stuff", "well"]
@@ -149,6 +162,8 @@ if st.button("Analyze Text", disabled=(model is None and not demo_mode)):
             is_human_prob = 1 - is_ai_prob
         else:
             X_input = tfidf.transform([user_text])
+            if scaler is not None:
+                X_input = scaler.transform(X_input)
             prediction_prob = model.predict(X_input)[0][0]
             human_index = np.where(le.classes_ == 'Human')[0][0]
             is_human_prob = prediction_prob if human_index == 1 else (1 - prediction_prob)
