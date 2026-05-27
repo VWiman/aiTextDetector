@@ -8,13 +8,6 @@ import time
 import pandas as pd
 import re
 
-# Monkeypatch Keras to handle models saved with different versions
-from keras.layers import Layer
-original_layer_init = Layer.__init__
-def patched_layer_init(self, *args, **kwargs):
-    kwargs.pop('quantization_config', None)
-    original_layer_init(self, *args, **kwargs)
-Layer.__init__ = patched_layer_init
 
 # Set page configuration
 st.set_page_config(
