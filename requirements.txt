@@ -1,5 +1,5 @@
 tensorflow==2.18.1
-tensorflow-metal==1.2.0
+tensorflow-metal==1.2.0; sys_platform == "darwin" and platform_machine == "arm64"
 pandas==3.0.3
 numpy==2.0.2
 scikit-learn==1.8.0
@@ -8,3 +8,4 @@ matplotlib==3.10.9
 seaborn==0.13.2
 streamlit==1.57.0
 scikeras==0.13.0
+keras==3.14.1
