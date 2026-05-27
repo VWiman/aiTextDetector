@@ -11,7 +11,7 @@ RANDOM_SEED = 42
 TEST_SIZE = 0.2                    # fraction held out for testing
 
 # ── TF-IDF ────────────────────────────────────────────────
-TFIDF_MAX_FEATURES = 10000
+TFIDF_MAX_FEATURES = 20000
 TFIDF_NGRAM_RANGE = (1, 2)        # unigrams + bigrams
 TFIDF_STOP_WORDS = 'english'
 
@@ -30,7 +30,7 @@ LEARNING_RATE = 0.00003            # default Adam LR (set to None to use optimiz
 LOSS = 'binary_crossentropy'
 
 # ── Training ──────────────────────────────────────────────
-EPOCHS = 12
+EPOCHS = 20
 BATCH_SIZE = 32
 VALIDATION_SPLIT = 0.2             # fraction of training data used for validation
 
@@ -41,10 +41,10 @@ ES_PATIENCE = 3
 ES_RESTORE_BEST = True
 
 # ── Feature importance ────────────────────────────────────
-FI_TOP_N = 3                      # how many features to display
-FI_CANDIDATES = 10                 # pre-screen candidates via model weights
-FI_TEST_SAMPLES = 100              # test samples used for permutation
-FI_REPEATS = 2                     # permutation repeats per feature
+FI_TOP_N = 5                      # how many features to display
+FI_CANDIDATES = 20                 # pre-screen candidates via model weights
+FI_TEST_SAMPLES = 200              # test samples used for permutation
+FI_REPEATS = 4                     # permutation repeats per feature
 
 # ── Grid Search ────────────────────────────────────
 PARAM_GRID = {

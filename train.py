@@ -204,17 +204,14 @@ if grid_search == False:
     evaluate_model(model, history, X_test, y_test, le)
 
     # Classification Report:
-    #             precision    recall  f1-score   support
+    #               precision    recall  f1-score   support
 
-    #         AI       0.78      0.79      0.79     33224
-    #     Human       0.79      0.77      0.78     33223
+    #           AI       0.80      0.82      0.81     33224
+    #        Human       0.81      0.80      0.81     33223
 
-    #     accuracy                           0.78     66447
-    # macro avg       0.78      0.78      0.78     66447
-    # weighted avg       0.78      0.78      0.78     66447
-
-    # Test Loss:     0.4659
-    # Test Accuracy: 0.7835
+    #     accuracy                           0.81     66447
+    #    macro avg       0.81      0.81      0.81     66447
+    # weighted avg       0.81      0.81      0.81     66447
     
     # ============================================================
     # 8. FEATURE IMPORTANCE
