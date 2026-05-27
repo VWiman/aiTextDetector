@@ -164,6 +164,7 @@ if st.button("Analyze Text", disabled=(model is None and not demo_mode)):
             X_input = tfidf.transform([user_text])
             if scaler is not None:
                 X_input = scaler.transform(X_input)
+            X_input = X_input.toarray().astype('float32')
             prediction_prob = model.predict(X_input)[0][0]
             human_index = np.where(le.classes_ == 'Human')[0][0]
             is_human_prob = prediction_prob if human_index == 1 else (1 - prediction_prob)
