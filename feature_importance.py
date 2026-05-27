@@ -5,7 +5,7 @@ from config import *
 # ============================================================
 # FEATURE IMPORTANCE
 # ============================================================
-def feature_importance(model, X_test, y_test, tfidf):
+def feature_importance(model, X_test, y_test, feature_names):
     # Step 1: Pre-screen using model weights
     first_layer_weights = np.abs(model.layers[0].get_weights()[0])
     weight_importance = first_layer_weights.sum(axis=1)
@@ -15,7 +15,7 @@ def feature_importance(model, X_test, y_test, tfidf):
     # Step 2: Permutation importance only on candidates
     X_test_small = X_test[:FI_TEST_SAMPLES]
     y_test_small = y_test[:FI_TEST_SAMPLES]
-    feature_names = tfidf.get_feature_names_out()
+    feature_names = np.asarray(feature_names)
 
     y_base_prob = model.predict(X_test_small, verbose=0).flatten()
     baseline_acc = np.mean((y_base_prob >= 0.5).astype(int) == y_test_small)

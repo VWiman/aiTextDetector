@@ -6,14 +6,18 @@ Edit values here — no need to touch train.py
 
 # ── Data ──────────────────────────────────────────────────
 DATASET_PATH = 'ai_detector_dataset.csv'
-SAMPLES_PER_CLASS = 100          # rows to sample from each label
+SAMPLES_PER_CLASS = 100000          # rows to sample from each label
 RANDOM_SEED = 42
-TEST_SIZE = 0.2                    # fraction held out for testing
+TEST_SIZE = 0.3                    # fraction held out for testing
 
-# ── TF-IDF ────────────────────────────────────────────────
+# ── TF-IDF (word channel) ─────────────────────────────────
 TFIDF_MAX_FEATURES = 20000
 TFIDF_NGRAM_RANGE = (1, 2)        # unigrams + bigrams
 TFIDF_STOP_WORDS = 'english'
+
+# ── TF-IDF (char channel) ─────────────────────────────────
+TFIDF_CHAR_MAX_FEATURES = 8000
+TFIDF_CHAR_NGRAM_RANGE = (3, 4)   # char_wb 3- to 4-grams
 
 # ── Network architecture ─────────────────────────────────
 # Each tuple = (neurons, activation, dropout_rate)
@@ -35,8 +39,8 @@ BATCH_SIZE = 32
 VALIDATION_SPLIT = 0.2             # fraction of training data used for validation
 
 # ── Early stopping ────────────────────────────────────────
-ES_MONITOR = 'val_accuracy'
-ES_MODE = 'max'                    # 'max' for accuracy, 'min' for loss
+ES_MONITOR = 'val_loss'
+ES_MODE = 'min'                    # 'max' for accuracy, 'min' for loss
 ES_PATIENCE = 3
 ES_RESTORE_BEST = True
 

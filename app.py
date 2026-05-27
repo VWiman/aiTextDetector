@@ -6,7 +6,8 @@ import numpy as np
 import os
 import time
 import pandas as pd
-import re
+from scipy.sparse import hstack, csr_matrix
+from text_features import remove_source_leaks, compute_text_stats
 
 
 # Set page configuration
@@ -23,10 +24,11 @@ st.set_page_config(
 def load_assets():
     model_path = 'ann_ai_detector_model.keras'
     tfidf_path = 'tfidf_vectorizer.joblib'
+    tfidf_char_path = 'tfidf_char_vectorizer.joblib'
     le_path = 'label_encoder.joblib'
     scaler_path = 'scaler.joblib'
     
-    assets = {"model": None, "tfidf": None, "le": None, "scaler": None, "error": None}
+    assets = {"model": None, "tfidf": None, "tfidf_char": None, "le": None, "scaler": None, "error": None}
     
     if not os.path.exists(model_path):
         assets["error"] = f"Model file '{model_path}' not found."
@@ -35,6 +37,7 @@ def load_assets():
     try:
         assets["model"] = keras.models.load_model(model_path)
         assets["tfidf"] = joblib.load(tfidf_path)
+        assets["tfidf_char"] = joblib.load(tfidf_char_path)
         assets["le"] = joblib.load(le_path)
         assets["scaler"] = joblib.load(scaler_path)
     except Exception as e:
@@ -45,6 +48,7 @@ def load_assets():
 assets = load_assets()
 model = assets["model"]
 tfidf = assets["tfidf"]
+tfidf_char = assets["tfidf_char"]
 le = assets["le"]
 scaler = assets["scaler"]
 
@@ -52,29 +56,28 @@ scaler = assets["scaler"]
 # 2. HELPER FUNCTIONS
 # ============================================================
 def calculate_text_stats(text):
-    """Calculates basic linguistic statistics for the input text."""
-    words = text.split()
-    sentences = re.split(r'[.!?]+', text)
-    sentences = [s for s in sentences if len(s.strip()) > 0]
-    
-    word_count = len(words)
-    sent_count = len(sentences)
-    avg_sent_len = word_count / sent_count if sent_count > 0 else 0
-    unique_words = len(set(w.lower() for w in words))
-    lexical_diversity = (unique_words / word_count) * 100 if word_count > 0 else 0
-    
+    """Calculates basic linguistic statistics for the input text (display dict)."""
+    arr = compute_text_stats([text])[0]
     return {
-        "word_count": word_count,
-        "avg_sent_len": avg_sent_len,
-        "lexical_diversity": lexical_diversity
+        "word_count": int(arr[0]),
+        "avg_sent_len": float(arr[1]),
+        "lexical_diversity": float(arr[2])
     }
 
 def get_top_influential_words(text, is_ai_leaning):
-    if model is not None and tfidf is not None and scaler is not None:
-        feature_names = tfidf.get_feature_names_out()
+    if model is not None and tfidf is not None and tfidf_char is not None and scaler is not None:
+        text_clean = remove_source_leaks(text.strip())
+        feature_names = (
+            list(tfidf.get_feature_names_out()) +
+            list(tfidf_char.get_feature_names_out()) +
+            ['word_count', 'avg_sent_len', 'lexical_diversity']
+        )
         weights = model.layers[0].get_weights()[0].sum(axis=1)
-        X_vec = tfidf.transform([text])
-        X_vec_scaled = scaler.transform(X_vec).toarray()[0]
+        X_word = tfidf.transform([text_clean])
+        X_char = tfidf_char.transform([text_clean])
+        X_stats = compute_text_stats([text_clean])
+        X_full = hstack([X_word, X_char, csr_matrix(X_stats)]).tocsr()
+        X_vec_scaled = scaler.transform(X_full).toarray()[0]
         impact = X_vec_scaled * weights
         top_indices = np.argsort(np.abs(impact))[-8:]
         return [feature_names[i] for i in top_indices if X_vec_scaled[i] > 0]
@@ -154,7 +157,11 @@ if st.button("Analyze Text", disabled=(model is None and not demo_mode)):
             is_ai_prob = np.random.uniform(0.1, 0.9)
             is_human_prob = 1 - is_ai_prob
         else:
-            X_input = tfidf.transform([user_text])
+            user_text_clean = remove_source_leaks(user_text.strip())
+            X_word = tfidf.transform([user_text_clean])
+            X_char = tfidf_char.transform([user_text_clean])
+            X_stats = compute_text_stats([user_text_clean])
+            X_input = hstack([X_word, X_char, csr_matrix(X_stats)]).tocsr()
             if scaler is not None:
                 X_input = scaler.transform(X_input)
             X_input = X_input.toarray().astype('float32')
@@ -171,10 +178,10 @@ if st.button("Analyze Text", disabled=(model is None and not demo_mode)):
             if is_ai_prob > 0.5:
                 st.error("### Result: Likely AI")
                 st.metric("AI Confidence", f"{is_ai_prob*100:.1f}%")
-            elif is_ai_prob > 0.485:
+            elif is_ai_prob > 0.15:
                 st.warning("### Result: Inconclusive")
                 st.write("The model cannot confidently classify this text. It shows patterns of both human and AI writing.")
-            else: # Clearly Human
+            else: # Likely Human
 
                 st.success("### Result: Likely Human")
                 st.metric("Human Confidence", f"{is_human_prob*100:.1f}%")
